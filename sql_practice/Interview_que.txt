@@ -1,0 +1,78 @@
+
+# ✅ Table & Sample Data
+
+```sql
+CREATE TABLE employees (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(100),
+    manager_id INT,
+    join_date DATE,
+    salary DECIMAL(10,2),
+    department VARCHAR(50),
+    FOREIGN KEY (manager_id) REFERENCES employees(emp_id)
+);
+
+INSERT INTO employees (emp_id, emp_name, manager_id, join_date, salary, department) VALUES
+(1, 'Alice',   NULL, '2015-01-10', 90000, 'HR'),
+(2, 'Bob',      1,   '2016-03-15', 75000, 'HR'),
+(3, 'Charlie',  1,   '2014-11-12', 80000, 'Finance'),
+(4, 'David',    2,   '2017-05-22', 60000, 'Finance'),
+(5, 'Eve',      2,   '2018-07-19', 62000, 'Finance'),
+(6, 'Frank',    3,   '2013-08-01', 95000, 'IT'),
+(7, 'Grace',    3,   '2016-09-14', 70000, 'IT'),
+(8, 'Heidi',    6,   '2019-10-05', 50000, 'IT'),
+(9, 'Ivan',     6,   '2020-12-20', 52000, 'Finance'),
+(10,'Judy',     7,   '2021-01-25', 48000, 'HR');
+```
+
+👉 This dataset covers:
+
+* **Managers + reports**
+* **Different departments**
+* **Earlier vs later join dates**
+* **Salary variations**
+
+---
+
+# 🔥 Practice Question Bank
+
+### A. Self-Join Based
+
+1. Find employees who joined **before their managers**.
+2. List managers who have at least one report that joined earlier.
+3. Find employees who have the **same manager**.
+4. Find pairs of employees where **one earns more than the other** but both are in the same department.
+5. Find employees whose **manager is in a different department**.
+
+---
+
+### B. Aggregation / Group By
+
+6. Find the **average salary per department**.
+7. Find departments with **more than 2 employees**.
+8. Find the **highest-paid employee in each department**.
+9. Find managers who manage **more than 2 employees**.
+10. Find the department with the **earliest joiner**.
+ 
+---
+
+### C. Nested / Correlated Subqueries
+
+11. Find employees who earn **more than the average salary** of their department.
+12. Find employees who joined **before the earliest join date of their manager’s department**.
+13. Find employees with salary **greater than their manager’s salary**.
+14. Find the **second highest salary** in the company.
+15. Find employees who do **not manage anyone**.
+
+---
+
+### D. Advanced Joins & Conditions
+
+16. Find all **managers and their direct reports** (manager name + employee name).
+17. Find employees who **joined in the same year** as their manager.
+18. Find employees whose **salary is within 10% of their manager’s salary**.
+19. Find employees in **departments where average salary > 70k**.
+20. Find managers who manage employees **from more than one department**.
+
+
+

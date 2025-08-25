@@ -1,0 +1,29 @@
+https://www.python.org/downloads/
+
+mkdir sql_notebook (create a folder in desktop and open the folder path in cmd)
+
+cd sql_notebook
+
+python -m venv env
+
+env\Scripts\activate
+
+pip install --upgrade pip
+
+pip install notebook
+
+pip install ipython-sql
+
+pip install prettytable==0.7.2
+
+pip install mysql-connector-python
+
+pip install flask
+
+jupyter notebook
+
+%load_ext sql
+%sql mysql+mysqlconnector://root:root@localhost/test
+
+%%sql
+show databases;
