@@ -455,3 +455,290 @@ explain SELECT * FROM orders where created_at='2025-06-08 09:10:37' ORDER BY cre
 select *
 from orders
 where order_id = 1 or 1=1;
+
+CREATE TABLE store_sales (
+    id int AUTO_INCREMENT PRIMARY key,
+    store_name VARCHAR(50),
+    total_sales INT
+);
+
+INSERT INTO store_sales (store_name, total_sales) VALUES
+('BigMart',     1200),
+('FreshMart',    850),
+('DailyNeeds',   950),
+('SuperStore',  1300),
+('QuickBuy',     700),
+('FreshMart',    900),
+('BigMart',     1100),
+('DailyNeeds',  1050),
+('SuperStore',  1250),
+('QuickBuy',     750);
+
+-- Find stores whose sales where better than the average sales across all the stores.
+
+with total_sales_avg as (
+select *, sum(total_sales)over(PARTITION BY store_name) as sum_total_sales,
+avg(total_sales) over() as avg_total_sales
+from store_sales)
+select DISTINCT store_name
+from total_sales_avg
+where sum_total_sales > avg_total_sales;
+
+drop table if EXISTS Orders;
+CREATE TABLE Orders (
+    OrderID INT,
+    OrderDate DATE,
+    CustomerID INT
+);
+INSERT INTO Orders (OrderID, OrderDate, CustomerID) VALUES
+(1, '2024-01-01', 1),
+(2, '2024-01-02', 1),
+(3, '2024-02-04', 2),
+(4, '2024-02-06', 2),
+(5, '2024-02-07', 3),
+(6, '2024-02-08', 3);
+
+--Write a SQL query to find the customers who have placed orders on consecutive days.
+with days_diff as (
+select *, lag(`OrderDate`,1)over(PARTITION BY `CustomerID` order by `OrderDate`) as prev_order_date,
+datediff(`OrderDate`, lag(`OrderDate`,1)over(PARTITION BY `CustomerID` order by `OrderDate`)) as diff
+from Orders)
+select DISTINCT `CustomerID`
+from days_diff
+where diff = 1;
+
+-- solution 2
+SELECT DISTINCT o1.`CustomerID`
+from Orders as o1 join orders as o2 on o1.`CustomerID` = o2.`CustomerID`
+where o1.`CustomerID` = o2.`CustomerID` and o1.`OrderDate` = DATE_ADD(o2.`OrderDate`,interval 1 day)
+
+ SELECT DATE_FORMAT('2009-10-04 22:23:00',
+ '%W %M %Y');
+
+  SELECT DATE_ADD('2009-10-04 22:23:00', interval -1 day)
+
+SELECT DATEDIFF('2007-12-31 23:59:59','2007-12-30');
+
+CREATE TABLE orders_new (
+    OrderID INT,
+    OrderDate DATE,
+    CustomerID INT
+);
+-- Customer 101: 4-day streak (2025-08-01 to 2025-08-04)
+INSERT INTO orders_new (OrderID, OrderDate, CustomerID) VALUES
+(1001, '2025-08-01', 101),
+(1002, '2025-08-02', 101),
+(1003, '2025-08-03', 101),
+(1004, '2025-08-04', 101);
+
+-- Customer 102: 3-day streak (2025-07-10 to 2025-07-12)
+INSERT INTO orders_new (OrderID, OrderDate, CustomerID) VALUES
+(1005, '2025-07-10', 102),
+(1006, '2025-07-11', 102),
+(1007, '2025-07-12', 102);
+
+-- Customer 103: Non-streak orders_new (spaced out)
+INSERT INTO orders_new (OrderID, OrderDate, CustomerID) VALUES
+(1008, '2025-06-01', 103),
+(1009, '2025-06-03', 103),
+(1010, '2025-06-05', 103);
+
+-- Customer 104: 5-day streak (2025-09-01 to 2025-09-05)
+INSERT INTO orders_new (OrderID, OrderDate, CustomerID) VALUES
+(1011, '2025-09-01', 104),
+(1012, '2025-09-02', 104),
+(1013, '2025-09-03', 104),
+(1014, '2025-09-04', 104),
+(1015, '2025-09-05', 104);
+
+
+
+#### Write a SQL query to find the customers who have placed orders on 3 consecutive days.
+with days_diff as (
+select *, lag(`OrderDate`,1)over(PARTITION BY `CustomerID` order by `OrderDate`) as lag1,
+lag(`OrderDate`,2)over(PARTITION BY `CustomerID` order by `OrderDate`) as lag2,
+DATEDIFF(`OrderDate`,lag(`OrderDate`,1)over(PARTITION BY `CustomerID` order by `OrderDate`)) as diff1,
+DATEDIFF(lag(`OrderDate`,1)over(PARTITION BY `CustomerID` order by `OrderDate`), lag(`OrderDate`,2)over(PARTITION BY `CustomerID` order by `OrderDate`)) as diff2
+from orders_new)
+select DISTINCT `CustomerID`
+from days_diff
+where diff1 = 1 and diff2 = 1;
+
+CREATE TABLE nodes (
+    n INT PRIMARY KEY,
+    p INT
+);
+
+-- Insert sample data to demonstrate all three node types:
+-- 1. Root node (n=1) has a NULL parent.
+-- 2. Inner nodes (n=2, n=3) have a parent and children.
+-- 3. Leaf nodes (n=4, n=5, n=6) have a parent but no children.
+INSERT INTO nodes (n, p) VALUES
+(1, NULL),
+(2, 1),
+(3, 1),
+(4, 2),
+(5, 2),
+(6, 3);
+
+SELECT n,
+case when p is null then 'root'
+     when n not in (select distinct p from nodes where p is not null) then 'leaf'
+     else "inner"
+end as nodes
+from nodes;
+
+CREATE TABLE test_vals (x INT);
+
+INSERT INTO test_vals VALUES
+(1), (2), (NULL);
+
+select 
+case when 3 not in (select x from test_vals where x is not null) then "TRUE" else "FALSE" end as result
+from test_vals;
+
+-- Correct: single evaluation
+SELECT 3 NOT IN (SELECT x FROM test_vals where x is not null) AS result;
+
+USE interview_prep;
+drop table if exists sales_v2;
+CREATE TABLE sales_v2 (
+    CustomerNumber INT,
+    ProductNumber INT,
+    PartNumber VARCHAR(255),
+    OrderDate DATE,
+    OrderNumber FLOAT,
+    ShippedQuantity INT
+);
+INSERT INTO sales_v2 (CustomerNumber, ProductNumber, PartNumber, OrderDate, OrderNumber, ShippedQuantity)
+VALUES
+(101, 201, 'A123', '2024-01-15', 301.0, 5),
+(101, 202, 'B456', '2024-02-20', 302.0, 3),
+(102, 203, 'C789', '2024-03-10', 303.0, 10),
+(101, 201, 'A123', '2024-03-15', 304.0, 2),
+(103, 204, 'D012', '2024-04-05', 305.0, 7),
+(102, 203, 'C789', '2024-05-01', 306.0, 8),
+(101, 205, 'E345', '2024-06-30', 307.0, 1),
+(104, 206, 'F678', '2024-07-15', 308.0, 4),
+(101, 201, 'A123', '2025-09-01', 309.0, 6);
+
+SELECT *
+from sales_v2
+order by `CustomerNumber`, OrderDate;
+-- How to Identify Customers Whose Gap Since the Last Order is Greater Than Their Largest Historical Gap Between Orders
+with purchase_orders as (
+select *, lag(`OrderDate`,1)over(PARTITION BY `CustomerNumber` order by `OrderDate`) as prev_purchase_date,
+DATEDIFF(`OrderDate`,lag(`OrderDate`,1)over(PARTITION BY `CustomerNumber` order by `OrderDate`)) as prev_order_diff,
+LAST_VALUE(`OrderDate`)over(PARTITION BY `CustomerNumber` order by `OrderDate`rows between unbounded preceding and unbounded following ) as latest_purchase_date,
+DATEDIFF(CURRENT_DATE,LAST_VALUE(`OrderDate`)over(PARTITION BY `CustomerNumber` order by `OrderDate`rows between unbounded preceding and unbounded following )) as last_purchase_diff
+from sales_v2),
+t2 as (
+SELECT *, max(prev_order_diff)over(PARTITION BY `CustomerNumber`) as max_purchase_diff
+FROM purchase_orders)
+select DISTINCT `CustomerNumber`
+from t2
+where last_purchase_diff > max_purchase_diff;
+
+
+-- Create Table Query
+CREATE TABLE bakery_sales (
+    Day_of_Week VARCHAR(10),
+    Product VARCHAR(50),
+    Type VARCHAR(20),
+    Quantity INT,
+    Price DECIMAL(5, 2)
+);
+
+-- Insert Queries
+INSERT INTO bakery_sales (Day_of_Week, Product, Type, Quantity, Price) VALUES
+('Monday', 'Croissant', 'Pastry', 20, 2.5),
+('Monday', 'Baguette', 'Bread', 15, 3),
+('Monday', 'Muffin', 'Pastry', 18, 2),
+('Tuesday', 'Donut', 'Pastry', 25, 1.5),
+('Tuesday', 'Brownie', 'Dessert', 10, 2.8),
+('Tuesday', 'Cupcake', 'Dessert', 12, 3.2),
+('Wednesday', 'Croissant', 'Pastry', 22, 2.5),
+('Wednesday', 'Baguette', 'Bread', 14, 3),
+('Wednesday', 'Muffin', 'Pastry', 19, 2),
+('Thursday', 'Donut', 'Pastry', 30, 1.5),
+('Thursday', 'Brownie', 'Dessert', 15, 2.8),
+('Thursday', 'Cupcake', 'Dessert', 18, 3.2),
+('Friday', 'Croissant', 'Pastry', 25, 2.5),
+('Friday', 'Baguette', 'Bread', 18, 3),
+('Friday', 'Muffin', 'Pastry', 21, 2),
+('Saturday', 'Donut', 'Pastry', 27, 1.5),
+('Saturday', 'Brownie', 'Dessert', 12, 2.8),
+('Saturday', 'Cupcake', 'Dessert', 14, 3.2),
+('Sunday', 'Croissant', 'Pastry', 28, 2.5),
+('Sunday', 'Baguette', 'Bread', 16, 3),
+('Sunday', 'Muffin', 'Pastry', 20, 2);
+
+
+SELECT *
+from bakery_sales;
+
+select `Day_of_Week`,
+sum(case when `Type` = 'Pastry' then `Quantity` else 0 end) as 'Pastry',
+sum(case when `Type` = 'Bread' then `Quantity` else 0 end) as 'Bread',
+sum(case when `Type` = 'Dessert' then `Quantity` else 0 end) as 'Dessert'
+from bakery_sales
+GROUP BY `Day_of_Week`
+
+show DATABASES;
+use  interview_db;
+CREATE TABLE Employees_v1 (
+    EmpID INT PRIMARY KEY,
+    EmpName VARCHAR(50),
+    ManagerID INT
+);
+INSERT INTO Employees_v1 (EmpID, EmpName, ManagerID) VALUES
+(1, 'Chris', 101),
+(101, 'Duyen', 1001),
+(103, 'Catherine', 1001),
+(1001, 'Rick', 1008),
+(1008, 'Kane', NULL);
+
+SELECT *
+from employees_v1;
+SELECT m.`EmpID`, count(e.`EmpID`) as employees_count
+from employees_v1 as e join employees_v1 as m on e.`ManagerID` = m.`EmpID`
+GROUP BY m.`EmpID`;
+
+SELECT *
+from employees_v1 as e join employees_v1 as m on e.`ManagerID` = m.`EmpID` join employees_v1 as gm on m.`ManagerID` = gm.`EmpID`
+
+
+
+SELECT gm.`EmpName`, count(DISTINCT m.`EmpID`) as co
+from employees_v1 as e join employees_v1 as m on e.`ManagerID` = m.`EmpID` join employees_v1 as gm on m.`ManagerID` = gm.`EmpID`
+GROUP BY gm.`EmpName`;
+
+SELECT gm.`EmpName`, count(distinct m.`EmpID`) as count
+from employees_v1 as e join employees_v1 as m on e.`ManagerID` = m.`EmpID` join employees_v1 as gm on m.`ManagerID` = gm.`EmpID`
+where gm.`ManagerID` is not NULL
+GROUP BY gm.`EmpName`;
+
+CREATE TABLE orders_v1 (
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    order_amount DECIMAL(10, 2)
+);
+INSERT INTO orders_v1 (order_id, customer_id, order_date, order_amount) VALUES
+(1, 101, '2024-01-10', 150.00),
+(2, 101, '2024-02-15', 200.00),
+(3, 101, '2024-03-20', 180.00),
+(4, 102, '2024-01-12', 200.00),
+(5, 102, '2024-02-25', 250.00),
+(6, 102, '2024-03-10', 320.00),
+(7, 103, '2024-01-25', 400.00),
+(8, 103, '2024-02-15', 420.00);
+
+with customer_spend as (
+SELECT *, FIRST_VALUE(order_amount)over(PARTITION BY customer_id order by order_date desc) as latest_order_amount,
+DENSE_RANK()over(PARTITION BY customer_id order by order_date desc) as rnk
+FROM orders_v1)
+SELECT customer_id, order_amount as second_highest_order_amount, latest_order_amount
+FROM customer_spend
+where rnk = 2
+
