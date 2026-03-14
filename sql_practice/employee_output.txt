@@ -1,0 +1,15 @@
+{'id': 1, 'name': 'santhosh', 'department': 'AIML'}
+{'id': 2, 'name': 'Linkesh', 'department': 'Data science'}
+{'id': 3, 'name': 'Maddy', 'department': 'Embeeded systems'}
+{'id': 4, 'name': 'santhosh', 'department': 'AIML'}
+{'id': 5, 'name': 'Linkesh', 'department': 'Data science'}
+{'id': 6, 'name': 'Maddy', 'department': 'Embeeded systems'}
+{'id': 7, 'name': 'santhosh', 'department': 'AIML'}
+{'id': 8, 'name': 'Linkesh', 'department': 'Data science'}
+{'id': 9, 'name': 'Maddy', 'department': 'Embeeded systems'}
+{'id': 10, 'name': 'santhosh', 'department': 'AIML'}
+{'id': 11, 'name': 'Linkesh', 'department': 'Data science'}
+{'id': 12, 'name': 'Maddy', 'department': 'Embeeded systems'}
+{'id': 13, 'name': 'santhosh', 'department': 'AIML'}
+{'id': 14, 'name': 'Linkesh', 'department': 'Data science'}
+{'id': 15, 'name': 'Maddy', 'department': 'Embeeded systems'}
