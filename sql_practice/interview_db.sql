@@ -1,5 +1,52 @@
 -- Active: 1755452454828@@127.0.0.1@3306@interview_db
-CREATE TABLE employees_1 (
+use albertsons;
+CREATE TABLE users (
+    user_id INT PRIMARY KEY,
+    name VARCHAR(50)
+);
+
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    user_id INT,
+    order_date DATE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+-- Users
+INSERT INTO users (user_id, name) VALUES
+(1, 'Santhosh'),
+(2, 'Rahul'),
+(3, 'Priya'),
+(4, 'Ankit'),
+(5, 'Neha'),
+(6, 'Kiran');
+
+SELECT *
+from orders;
+-- Orders
+INSERT INTO orders (order_id, user_id, order_date) VALUES
+-- User 1 → ONLY old orders (inactive)
+(101, 1, '2023-01-10'),
+-- User 2 → recent order (active)
+(102, 2, CURDATE() - INTERVAL 2 MONTH),
+-- User 3 → multiple orders (old + recent → active)
+(103, 3, '2023-02-15'),
+(104, 3, CURDATE() - INTERVAL 1 MONTH),
+-- User 4 → NO orders (inactive)
+-- User 5 → exactly borderline (6 months ago)
+(105, 5, CURDATE() - INTERVAL 6 MONTH),
+-- User 6 → multiple old orders (inactive)
+(106, 6, '2022-05-01'),
+(107, 6, '2023-03-01');
+-- Find the users who did not order in the past 6 months
+with cte as (
+    SELECT *, ROW_NUMBER()over(PARTITION BY user_id ORDER BY order_date desc) as rn
+    from orders
+)
+SELECT u.user_id, u.name
+from users as u left join cte as c on u.user_id = c.user_id and rn  = 1
+where c.order_date < DATE_SUB(now(), interval 6 MONTH) or order_id is null
+
+CREATE TABLE employees (
     emp_id INT PRIMARY KEY,
     emp_name VARCHAR(100),
     manager_id INT,
@@ -8,6 +55,7 @@ CREATE TABLE employees_1 (
     department VARCHAR(50),
     FOREIGN KEY (manager_id) REFERENCES employees(emp_id)
 );
+
 
 INSERT INTO employees (emp_id, emp_name, manager_id, join_date, salary, department) VALUES
 (1, 'Alice',   NULL, '2015-01-10', 90000, 'HR'),
@@ -46,7 +94,7 @@ from employees as e1 join employees as e2 on e1.department = e2.department and e
 
 #Find employees whose manager is in a different department.
 SELECT e.emp_name as employee_name, e.department as emp_department, m.emp_name as mananger_name, m.department as manager_department
-FROM employees as e join employees as m on e.manager_id = m.emp_id and e.department != m.department
+FROM employees as e join employees as m on e.manager_id = m.emp_id and e.department != m.department;
 
 ======================section B===============================================;
 
@@ -164,9 +212,11 @@ order by total_order_value DESC
 limit 3
 
 # From the employees table, find departments where every employee earns more than 50,000.
-
+SELECT *
+from employees;
 SELECT department
 from employees
+--  
 GROUP BY department
 having min(salary)> 50000
 
@@ -358,7 +408,9 @@ from interactive_video as iv join atleast_five_videos as afv on iv.user_id = afv
 GROUP BY iv.user_id
 having count(*)>=3 
 order by 2 desc;
+use albertsons;
 
+drop table if exists orders;
 CREATE TABLE Orders (
     OrderID INT PRIMARY KEY,
     CustomerID INT,
@@ -401,17 +453,16 @@ INSERT INTO Orders (OrderID, CustomerID, RestaurantID, OrderDate, Amount) VALUES
 /*Write an SQL query to create a report that shows:
 
 Each restaurant's name.
-
 The popularity of the restaurant, defined as the total number of orders it received.
-
 A rating for each restaurant such that:
-
 If the restaurant has more than 3 orders, assign a rating of 5.
-
 Otherwise, assign a rating of 1.
-
 Create this result as a new table called report.
 */
+SELECT r.`RestaurantName`, count(o.order_id) as popularity, 
+case when count(o.order_id) > 3 then 5 else 1 end as Rating
+from restaurants as r left join Orders as o on r.`RestaurantID` = o.`RestaurantID`
+GROUP BY r.`RestaurantName`
 
 create table report as (
 select `RestaurantName`, count(`OrderID`) as popularity, 
@@ -514,7 +565,7 @@ where o1.`CustomerID` = o2.`CustomerID` and o1.`OrderDate` = DATE_ADD(o2.`OrderD
 
  SELECT DATE_FORMAT('2009-10-04 22:23:00',
  '%W %M %Y');
-
+SELECT '2009-10-04'-interval 1 day;
   SELECT DATE_ADD('2009-10-04 22:23:00', interval -1 day)
 
 SELECT DATEDIFF('2007-12-31 23:59:59','2007-12-30');
@@ -639,7 +690,7 @@ select DISTINCT `CustomerNumber`
 from t2
 where last_purchase_diff > max_purchase_diff;
 
-
+use albertsons;
 -- Create Table Query
 CREATE TABLE bakery_sales (
     Day_of_Week VARCHAR(10),
@@ -765,7 +816,7 @@ INSERT INTO orders (order_id, customer_id, order_date, order_amount) VALUES
 (8, 400, '2022-01-03', 1000),
 (9, 600, '2022-01-03', 3000);
 
-
+--find the number of new customers and existing customers for each order date.
 
 with first_order as (
     select customer_id , min(order_date) as first_order_date
@@ -990,7 +1041,10 @@ INSERT INTO orders (order_date) VALUES
 ('2025-09-01'),('2025-09-04'),('2025-09-06'),('2025-09-09'),
 ('2025-10-02'),('2025-10-04'),('2025-10-06'),('2025-10-08'),('2025-10-11');
 
-
+SELECT date_format(order_date, "%Y") AS year, date_format(order_date, "%m") as month, count(order_id) as total_orders
+from orders
+group by date_format(order_date, "%Y"), date_format(order_date, "%m")
+order by 1,2;
 with monthly_orders as (
 SELECT date_format(order_date, "%Y") AS year, date_format(order_date, "%m") as month, count(order_id) as total_orders
 from orders
@@ -1113,8 +1167,8 @@ GROUP BY `Player`;
 
 create DATABASE flipkart;
 
-use flipkart;
-
+use indium;
+drop table if exists orders;
 CREATE TABLE orders (
     order_id INT PRIMARY KEY,
     customer_id VARCHAR(10) NOT NULL,
@@ -1331,7 +1385,7 @@ INSERT INTO orders (order_id, customer_id, order_date, restaurant_name, amount) 
 --  Find Zomato customers who ordered only on weekends in the last 3 months
 SELECT customer_id, round(count(distinct case when DATE_FORMAT(order_date, '%w') in (0,6) then order_id end)*100.0 / count(distinct order_id),2) as weekend_perc
 from orders
-where order_date >= date_sub(current_date, interval 3 month) 
+where order_date >= date_sub(current_date, interval 12 month) 
 group by customer_id
 order by 2 desc;
 drop table if exists orders;
@@ -1458,7 +1512,192 @@ select avg(tip_amount) from orders;
 select avg(tip_amount) from orders where hour(order_time) in (22,23,0,1,2);
 
 select  order_time, hour(order_time) as h
-from orders
+from orders;
+
+
+DROP TABLE IF EXISTS Orders;
+
+CREATE TABLE Orders (
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO Orders (order_id, customer_id, order_date, amount) VALUES
+-- Customer 101
+(1,101,'2025-01-01',500),
+(2,101,'2025-01-02',700),
+(3,101,'2025-01-03',900),
+(4,101,'2025-01-05',600),
+(5,101,'2025-01-06',800),
+(6,101,'2025-01-10',1000),
+-- Customer 102
+(7,102,'2025-01-01',450),
+(8,102,'2025-01-02',550),
+(9,102,'2025-01-05',650),
+(10,102,'2025-01-06',750),
+(11,102,'2025-01-07',850),
+-- Customer 103
+(12,103,'2025-01-03',400),
+(13,103,'2025-01-10',900),
+-- Customer 104
+(14,104,'2025-01-01',500),
+(15,104,'2025-01-02',550),
+(16,104,'2025-01-03',600),
+(17,104,'2025-01-04',650),
+(18,104,'2025-01-05',700);
+
+with cte1 as (
+SELECT *, ROW_NUMBER()over(PARTITION BY customer_id ORDER BY order_date) as rn
+from orders),
+cte2 as (
+SELECT *, order_date - INTERVAL rn day as group_date
+from cte1),
+cte3 as (
+SELECT customer_id, group_date, min(order_date) as min_date,max(order_date) as max_date,count(*) as streak_length
+from cte2
+GROUP BY customer_id, group_date)
+SELECT customer_id,min_date, max_date,streak_length
+from(
+SELECT *, row_number()over(PARTITION BY customer_id ORDER BY streak_length desc) as rnk
+from cte3) as X
+where X.rnk = 1;
+
+DROP TABLE IF EXISTS Orders;
+
+CREATE TABLE Orders(
+    order_id INT PRIMARY KEY,
+    customer_id INT,
+    order_date DATE,
+    amount DECIMAL(10,2)
+);
+INSERT INTO Orders VALUES
+(1,101,'2025-01-05',500),
+(2,101,'2025-02-10',700),
+(3,101,'2025-03-18',900),
+(4,102,'2025-01-15',300),
+(5,102,'2025-01-28',450),
+(6,103,'2025-02-05',600),
+(7,103,'2025-03-08',700),
+(8,104,'2025-01-10',400),
+(9,105,'2025-03-12',800),
+(10,105,'2025-04-15',950),
+(11,106,'2025-02-20',550),
+(12,106,'2025-02-25',650),
+(13,106,'2025-03-20',750);
+
+with first_purchase as (
+SELECT *, ROW_NUMBER()over(PARTITION BY customer_id ORDER BY order_date) as rn
+from orders),
+new_customers as (
+SELECT DATE_FORMAT(order_date,'%Y-%m') as month, count(*) as new_customers
+from first_purchase
+where rn = 1
+GROUP BY DATE_FORMAT(order_date,'%Y-%m')),
+cte3 as (
+SELECT *, min(DATE_FORMAT(order_date,'%Y-%m'))over(PARTITION BY customer_id) as min_date, DATE_FORMAT(order_date,'%Y-%m') as new_order_date
+from orders),
+cte4 as (
+SELECT new_order_date, count(DISTINCT customer_id) as retained_customers
+from cte3
+where min_date != new_order_date
+GROUP BY new_order_date)
+SELECT month as order_date, new_customers,COALESCE(retained_customers,0) as retained_customers,
+(retained_customers / lag(new_customers) over(order by order_date)) * 100
+from new_customers as t1 left join cte4 as t2 on t1.month = t2.new_order_Date;
+
+CREATE TABLE city_pairs (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    city_a VARCHAR(50),
+    city_b VARCHAR(50)
+);
+INSERT INTO city_pairs (city_a, city_b) VALUES
+('Chennai', 'Mumbai'),
+('Mumbai', 'Chennai'),
+('Bangalore', 'Hyderabad'),
+('Hyderabad', 'Bangalore'),
+('Delhi', 'Pune'),
+('Pune', 'Delhi'),
+('Kolkata', 'Ahmedabad'),
+('Ahmedabad', 'Kolkata'),
+('Chennai', 'Delhi'),
+('Delhi', 'Chennai'),
+('Mumbai', 'Bangalore'),
+('Bangalore', 'Mumbai'),
+('Chennai', 'Mumbai'),
+('Hyderabad', 'Pune'),
+('Pune', 'Hyderabad');
+
+select distinct least(city_a,city_b) as city_a, greatest(city_a,city_b) as city_b
+from city_pairs;
+
+CREATE TABLE transactions (
+    transaction_id INT PRIMARY KEY,
+    merchant_id INT,
+    transaction_date DATE,
+    amount DECIMAL(10,2)
+);
+
+INSERT INTO transactions VALUES
+(1,101,'2025-01-01',100),
+(2,101,'2025-01-01',200),
+(3,101,'2025-01-03',300),
+(4,101,'2025-01-06',400),
+(5,102,'2025-01-01',500),
+(6,102,'2025-01-02',100),
+(7,102,'2025-01-05',250),
+(8,102,'2025-01-06',150);
+
+with total_amount as(
+select merchant_id, transaction_date, sum(amount) as total_amount
+from transactions
+group by merchant_id, transaction_date);
+ WITH RECURSIVE calendar AS
+(
+    SELECT MIN(transaction_date) AS transaction_date
+    FROM transactions
+
+    UNION ALL
+
+    SELECT DATE_ADD(transaction_date, INTERVAL 1 DAY)
+    FROM calendar
+    WHERE transaction_date <
+    (
+        SELECT MAX(transaction_date)
+        FROM transactions
+    )
+),
+daily_transactions AS
+(
+    SELECT
+        merchant_id,
+        transaction_date,
+        SUM(amount) AS daily_volume
+    FROM transactions
+    GROUP BY merchant_id, transaction_date
+),
+merchant_dates AS
+(
+    SELECT
+        m.merchant_id,
+        c.transaction_date
+    FROM
+    (
+        SELECT DISTINCT merchant_id
+        FROM transactions
+    ) m
+    CROSS JOIN calendar c
+)
+SELECT t1.*, coalesce(t2.daily_volume,0) as daily_volume,
+round(avg(COALESCE(t2.daily_volume,0))over(partition by merchant_id order by t1.transaction_date rows between 6 PRECEDING and current row),2) as rolling_avg
+from merchant_dates as t1 left join daily_transactions as t2 on t1.merchant_id = t2.merchant_id and t1.transaction_date = t2.transaction_date
+order by 1,2;
+
+
+
+
+
 
 
 
