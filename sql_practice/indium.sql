@@ -1,5 +1,6 @@
 -- Active: 1755452454828@@127.0.0.1@3306@indium
 use indium;
+use indium;
 CREATE TABLE rides (
     ride_id INT PRIMARY KEY,
     driver_id INT NOT NULL,
