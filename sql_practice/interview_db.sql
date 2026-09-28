@@ -1,5 +1,5 @@
--- Active: 1755452454828@@127.0.0.1@3306@interview_db
-use albertsons;
+-- Active: 1790596888286@@127.0.0.1@3306@interview_db
+use interview_db;
 CREATE TABLE users (
     user_id INT PRIMARY KEY,
     name VARCHAR(50)
